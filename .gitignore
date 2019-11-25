@@ -1,0 +1,6 @@
+*.npy
+*.nc
+*/data/*
+*core*
+*.pyc
+*.png
