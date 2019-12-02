@@ -30,6 +30,8 @@ def normBySeason(season):
     topo = dataDir.joinpath('east_topo.npy')
     wrf = dataDir.joinpath('WRF_wy2017_daily_east_only_tmean.npy')
     prism = dataDir.joinpath('PRISM_wy2017_daily_east_only_tmean.npy')
+    nldas = dataDir.joinpath('NLDAS_wy2017_daily_east_only_tmean.npy')
+
     SeasonDic = {
         "OND": ("2016-10-01", "2016-12-30"),
         "JFM": ("2017-01-01", "2017-03-31"),
@@ -46,10 +48,12 @@ def normBySeason(season):
     topo = np.load(topo)
     wrf = np.load(wrf)[i1:i2, :]
     prism = np.load(prism)[i1:i2, :]
+    nldas = np.load(nldas)[i1:i2, :]
 
     # apply func
     tnorm, pnorm = valley_normalize(topo, prism)
     tnorm, wnorm = valley_normalize(topo, wrf)
+    tnorm, nnorm = valley_normalize(topo, nldas)
 
     # pline = linregress(tnorm, pnorm)
     # wline = linregress(tnorm, wnorm)
@@ -60,25 +64,23 @@ def normBySeason(season):
     # calc the variance by elevation band
     df = pd.DataFrame(data={'topo': tnorm,
                             'wrf': wnorm,
+                            'nldas': nnorm,
                             'prism': pnorm})
 
     df.set_index('topo', inplace=True)
 
     # to groups between 0-1500m
     grouped = df.groupby(pd.cut(df.index, elev_bins))
-    print(grouped.groups)
     wvar_elev = grouped.var()['wrf'].values
     pvar_elev = grouped.var()['prism'].values
-
+    nvar_elev = grouped.var()['nldas'].values
     # output
-    return tnorm, pnorm, wnorm, pvar_elev, wvar_elev, mids
+    return tnorm, pnorm, wnorm, nnorm, pvar_elev, wvar_elev, nvar_elev, mids
 
 # 6.5C/km line 
-
 y = np.linspace(0, 1500, 1500)
 rate = -6.5/1000.
 x = y*rate
-
 
 
 fig, axx = plt.subplots(2, 2)
@@ -86,16 +88,19 @@ fig.set_size_inches(12,12)
 ax = axx.flatten()
 
 for i, ssn in enumerate(["OND", "JFM", "AMJ", "JAS"]):
-    tnorm, pnorm, wnorm, pvar_elev, wvar_elev, mids = normBySeason(ssn)
+    tnorm, pnorm, wnorm, nnorm, pvar_elev, wvar_elev, nvar_elev, mids = normBySeason(ssn)
 
     ax[i].scatter(wnorm, tnorm, label='wrf',  marker='x', alpha=.85, color='r')
     ax[i].scatter(pnorm, tnorm, label='prism', marker='.', alpha=.85, color='b')
+    ax[i].scatter(nnorm, tnorm, label='prism', marker='+', alpha=.85, color='g')
 
     tx = ax[i].twiny()
     tx.invert_xaxis()
 
-    tx.plot(wvar_elev, mids, marker='x', color='red')
-    tx.plot(pvar_elev, mids, marker='.', color='blue')
+    tx.plot(wvar_elev, mids, marker='x', color='r')
+    tx.plot(pvar_elev, mids, marker='.', color='b')
+    tx.plot(nvar_elev, mids, marker='.', color='g')
+
     tx.set_xlim(5., 0)
 
     # plot regression lines
