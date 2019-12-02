@@ -43,10 +43,10 @@ def applyEastMask(
 
 
 topo = applyEastMask(topo, 'HGT')
-nldas_x = np.empty((365, topo.shape[0]))  # time X points_in_basin
 
-for t, date in enumerate(pd.date_range("2016-10-01", "2017-09-30", freq='1D')):
-	for var in ['TMEAN', 'TMIN', 'TMAX', 'PRCP']:
+for var in ['TMEAN', 'TMIN', 'TMAX', 'PRCP']:
+	nldas_x = np.empty((365, topo.shape[0]))  # time X points_in_basin
+	for t, date in enumerate(pd.date_range("2016-10-01", "2017-09-30", freq='1D')):
 		#---- prism ----
 		nldas_t = nldas.sel(time=date)
 		nldas_t = applyEastMask(nldas_t, var)
@@ -54,6 +54,7 @@ for t, date in enumerate(pd.date_range("2016-10-01", "2017-09-30", freq='1D')):
 		# assign it to the array
 		nldas_x[t, :] = nldas_t
 		
-		# save things ...
-		np.save(dataDir.joinpath('npyfiles','NLDAS_wy2017_daily_east_only_{}'.format(var)), nldas_x)
+	# save things ...
+	print(var)
+	np.save(dataDir.joinpath('npyfiles','NLDAS_wy2017_daily_east_only_{}'.format(var.lower())), nldas_x)
 	
