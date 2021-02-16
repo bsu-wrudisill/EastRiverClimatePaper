@@ -9,7 +9,7 @@ dataDir = Path('/home/wrudisill/scratch/EastRiverClimatePaper/data/')
 
 # read in the daymet 
 topo = xr.open_dataset(dataDir.joinpath('geog','topography.nc'))
-varlist = ['tmin', 'tmax', 'prcp']
+varlist = ['tmax']#, 'prcp']
 drange = pd.date_range("2016-10-01", "2017-09-30", freq='1D')
 
 
@@ -77,7 +77,12 @@ for dayvar in varlist:
 		# assign it to the array
 		else:
 			daymet_x[t, :] = daymet_t
+			print('date/min/max', date,np.min(daymet_t), np.max(daymet_t))
 
 	# save things ...
 	np.save(dataDir.joinpath('npyfiles','DAYMET_wy2017_daily_east_only_{}'.format(dayvar.lower())), daymet_x)
-	del daymet_x 
+	del daymet_x
+
+
+
+

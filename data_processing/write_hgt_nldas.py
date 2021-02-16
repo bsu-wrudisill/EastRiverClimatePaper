@@ -53,8 +53,8 @@ for var in ['TMEAN', 'TMIN', 'TMAX', 'PRCP']:
 		
 		# assign it to the array
 		nldas_x[t, :] = nldas_t
-		
+		print(date)	
 	# save things ...
 	print(var)
 	np.save(dataDir.joinpath('npyfiles','NLDAS_wy2017_daily_east_only_{}'.format(var.lower())), nldas_x)
-	
+	del nldas_x
